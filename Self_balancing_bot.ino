@@ -2,9 +2,11 @@
 #include "MPU6050_6Axis_MotionApps20.h"
 #include "Wire.h"
 #include<PID_v1.h>
+//arduino and mpu talk via I2C bus protocol
 MPU6050 mpu;
-double setpoint=0,Ki=0,Kp=1100,Kd=0,input,output;
+double setpoint=0,Ki=500,Kp=450,Kd=25,input,output;
 PID myPID(&input, &output, &setpoint, Kp, Ki, Kd, DIRECT);
+//PID initailzation
 int MPUOffsets[6] = { -1362 , -2060, 1005 , -64, -56 ,-70};
 void i2cSetup() {
   // join I2C bus (I2Cdev library doesn't do this automatically)
@@ -86,6 +88,7 @@ void MPUMath() {
 }
 void setup() {
   // put your setup code here, to run once:
+  //setting up the motor controlling pins and functions to obtain quaternion pitch angle.
   Serial.begin(115200); //115200
   while (!Serial);
   Serial.println("i2cSetup");
@@ -102,7 +105,9 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   if (mpuInterrupt ) { // wait for MPU interrupt or extra packet(s) available
+    //obtains the necessary pitch and stores in input
     GetDMP();
+    //PID computation occurs and PWM values obtained are given
     myPID.Compute();
     if(output<0){
       digitalWrite(13,LOW);
